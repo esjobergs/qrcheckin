@@ -47,19 +47,10 @@
       margin-top: 1rem;
     }
 
-    .link {
-      margin-top: 1.8rem;
-    }
-
-    .link a {
-      text-decoration: none;
-      color: #007aff;
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-
-    .link a:hover {
-      text-decoration: underline;
+    .info {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #666;
     }
   </style>
 </head>
@@ -67,8 +58,8 @@
   <div class="card">
     <div class="loader" id="loader"></div>
     <div class="status" id="status">⏳ Checkar in...</div>
-    <div class="link" id="links" style="display:none;">
-      <a href="https://www.tesla.com" target="_blank">Gå till tesla.com</a>
+    <div class="info" id="redirect" style="display:none;">
+      Du skickas vidare om 5 sekunder...
     </div>
   </div>
 
@@ -76,7 +67,11 @@
     function showMessage(message) {
       document.getElementById("loader").style.display = "none";
       document.getElementById("status").textContent = message;
-      document.getElementById("links").style.display = "block";
+      document.getElementById("redirect").style.display = "block";
+
+      setTimeout(() => {
+        window.location.href = "https://www.tesla.com";
+      }, 5000); // 5 sekunder
     }
 
     if (!sessionStorage.getItem("checkinPosted")) {
@@ -84,13 +79,13 @@
         method: "POST"
       }).then(() => {
         sessionStorage.setItem("checkinPosted", "true");
-        showMessage("✅ Du är nu incheckad och vi hjälper dig snart. Du kan stänga denna sida.");
+        showMessage("✅ Du är nu incheckad och vi hjälper dig snart.");
       }).catch(() => {
         document.getElementById("loader").style.display = "none";
         document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
       });
     } else {
-      showMessage("✅ Du är redan incheckad och vi hjälper dig snart. Du kan stänga denna sida.");
+      showMessage("✅ Du är redan incheckad. Vi hjälper dig snart.");
     }
   </script>
 </body>
