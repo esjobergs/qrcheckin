@@ -69,9 +69,10 @@
       document.getElementById("status").textContent = message;
       document.getElementById("redirect").style.display = "block";
 
+      // Vänta 4 sekunder och omdirigera
       setTimeout(() => {
         window.location.href = "https://www.tesla.com/sv_se/";
-      }, 4000); // 4 sekunder
+      }, 4000);
     }
 
     if (!sessionStorage.getItem("checkinPosted")) {
