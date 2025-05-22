@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Checkar in...</title>
   <style>
     body {
@@ -56,19 +56,27 @@
 <body>
   <div class="card">
     <div class="loader" id="loader"></div>
-    <div class="status" id="status">Checkar in...</div>
+    <div class="status" id="status">⏳ Checkar in...</div>
   </div>
 
   <script>
-    fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
-      method: "POST"
-    }).then(() => {
+    // Kontrollera om POST redan skickats under denna session
+    if (!sessionStorage.getItem("checkinPosted")) {
+      fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
+        method: "POST"
+      }).then(() => {
+        sessionStorage.setItem("checkinPosted", "true");
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("status").textContent = "✅ Du är nu incheckad – välkommen!";
+      }).catch(() => {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
+      });
+    } else {
+      // Redan incheckad – visa utan att skicka igen
       document.getElementById("loader").style.display = "none";
-      document.getElementById("status").textContent = "✅ Du är nu incheckad – välkommen!";
-    }).catch(() => {
-      document.getElementById("loader").style.display = "none";
-      document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
-    });
+      document.getElementById("status").textContent = "✔️ Du är redan incheckad.";
+    }
   </script>
 </body>
 </html>
