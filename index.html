@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Checkar in...</title>
+  <title>Incheckning</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f0f4ff, #d9e4ff);
+      background-color: #f5f5f5;
+      font-family: Helvetica, Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      color: #333;
+      color: #222;
     }
 
     .card {
-      background: white;
+      background: #ffffff;
       padding: 2rem 3rem;
       border-radius: 1rem;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
       text-align: center;
-      max-width: 420px;
+      max-width: 400px;
       width: 100%;
-      animation: fadeIn 1s ease-in-out;
+      transition: all 0.3s ease;
     }
 
     .loader {
-      border: 6px solid #e0e0e0;
-      border-top: 6px solid #4a90e2;
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #888;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       animation: spin 1s linear infinite;
       margin: 0 auto 1rem;
     }
@@ -42,32 +42,20 @@
       100% { transform: rotate(360deg); }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .status {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       margin-top: 1rem;
-    }
-
-    .info {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: #666;
     }
 
     .link {
-      margin-top: 1.2rem;
+      margin-top: 1.8rem;
     }
 
     .link a {
-      display: block;
-      margin: 0.5rem 0;
-      color: #4a90e2;
       text-decoration: none;
-      font-weight: 600;
+      color: #007aff;
+      font-weight: 500;
+      font-size: 0.95rem;
     }
 
     .link a:hover {
@@ -79,18 +67,15 @@
   <div class="card">
     <div class="loader" id="loader"></div>
     <div class="status" id="status">⏳ Checkar in...</div>
-    <div class="info" id="info" style="display:none;">
-      ✅ Du är nu incheckad och vi hjälper dig snart. Du kan nu stänga denna sida.
-    </div>
     <div class="link" id="links" style="display:none;">
-      🔗 <a href="https://www.tesla.com/" target="_blank">tesla.com</a>
+      <a href="https://www.tesla.com" target="_blank">Gå till tesla.com</a>
     </div>
   </div>
 
   <script>
-    function showContent() {
+    function showMessage(message) {
       document.getElementById("loader").style.display = "none";
-      document.getElementById("info").style.display = "block";
+      document.getElementById("status").textContent = message;
       document.getElementById("links").style.display = "block";
     }
 
@@ -99,15 +84,13 @@
         method: "POST"
       }).then(() => {
         sessionStorage.setItem("checkinPosted", "true");
-        document.getElementById("status").textContent = "✅ Du är nu incheckad och vi hjälper dig snart. Du kan stänga denna sida.";
-        showContent();
+        showMessage("✅ Du är nu incheckad och vi hjälper dig snart. Du kan stänga denna sida.");
       }).catch(() => {
         document.getElementById("loader").style.display = "none";
         document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
       });
     } else {
-      document.getElementById("status").textContent = "✔️ Du är redan incheckad. Du kan stänga denna sida.";
-      showContent();
+      showMessage("✅ Du är redan incheckad och vi hjälper dig snart. Du kan stänga denna sida.");
     }
   </script>
 </body>
