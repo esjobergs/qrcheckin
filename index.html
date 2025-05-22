@@ -80,11 +80,10 @@
     <div class="loader" id="loader"></div>
     <div class="status" id="status">⏳ Checkar in...</div>
     <div class="info" id="info" style="display:none;">
-      ✅ Du är nu incheckad! Du kan stänga denna sida när du vill.
+      ✅ Du är nu incheckad och vi hjälper dig snart! Du kan stänga denna sida.
     </div>
     <div class="link" id="links" style="display:none;">
-      📺 <a href="https://www.youtube.com" target="_blank">Titta på YouTube medan du väntar</a>
-      🔗 <a href="#" target="_blank">[Plats för extra länk – t.ex. schema]</a>
+      🔗 <a href="https://www.tesla.com/" target="_blank">tesla.com</a>
     </div>
   </div>
 
@@ -100,14 +99,14 @@
         method: "POST"
       }).then(() => {
         sessionStorage.setItem("checkinPosted", "true");
-        document.getElementById("status").textContent = "✅ Du är nu incheckad – välkommen!";
+        document.getElementById("status").textContent = "✅ Du är nu incheckad och vi hjälper dig snart! Du kan nu stänga denna sida.";
         showContent();
       }).catch(() => {
         document.getElementById("loader").style.display = "none";
         document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
       });
     } else {
-      document.getElementById("status").textContent = "✔️ Du är redan incheckad.";
+      document.getElementById("status").textContent = "✔️ Du är redan incheckad. Du kan nu stänga denna sida.";
       showContent();
     }
   </script>
