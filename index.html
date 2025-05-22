@@ -22,7 +22,7 @@
       border-radius: 1rem;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       text-align: center;
-      max-width: 400px;
+      max-width: 420px;
       width: 100%;
       animation: fadeIn 1s ease-in-out;
     }
@@ -51,31 +51,64 @@
       font-size: 1.2rem;
       margin-top: 1rem;
     }
+
+    .info {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #666;
+    }
+
+    .link {
+      margin-top: 1.2rem;
+    }
+
+    .link a {
+      display: block;
+      margin: 0.5rem 0;
+      color: #4a90e2;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="loader" id="loader"></div>
     <div class="status" id="status">⏳ Checkar in...</div>
+    <div class="info" id="info" style="display:none;">
+      ✅ Du är nu incheckad! Du kan stänga denna sida när du vill.
+    </div>
+    <div class="link" id="links" style="display:none;">
+      📺 <a href="https://www.youtube.com" target="_blank">Titta på YouTube medan du väntar</a>
+      🔗 <a href="#" target="_blank">[Plats för extra länk – t.ex. schema]</a>
+    </div>
   </div>
 
   <script>
-    // Kontrollera om POST redan skickats under denna session
+    function showContent() {
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("info").style.display = "block";
+      document.getElementById("links").style.display = "block";
+    }
+
     if (!sessionStorage.getItem("checkinPosted")) {
       fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
         method: "POST"
       }).then(() => {
         sessionStorage.setItem("checkinPosted", "true");
-        document.getElementById("loader").style.display = "none";
         document.getElementById("status").textContent = "✅ Du är nu incheckad – välkommen!";
+        showContent();
       }).catch(() => {
         document.getElementById("loader").style.display = "none";
         document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
       });
     } else {
-      // Redan incheckad – visa utan att skicka igen
-      document.getElementById("loader").style.display = "none";
       document.getElementById("status").textContent = "✔️ Du är redan incheckad.";
+      showContent();
     }
   </script>
 </body>
