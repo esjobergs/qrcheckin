@@ -24,7 +24,6 @@
       text-align: center;
       max-width: 400px;
       width: 100%;
-      transition: all 0.3s ease;
     }
 
     .loader {
@@ -64,22 +63,24 @@
   </div>
 
   <script>
+    const now = new Date().getTime();
+    const previousCheckin = localStorage.getItem("checkinPosted");
+    const expiry = 24 * 60 * 60 * 1000; // 24 timmar i ms
+
     function showMessage(message) {
       document.getElementById("loader").style.display = "none";
       document.getElementById("status").textContent = message;
       document.getElementById("redirect").style.display = "block";
-
-      // Vänta 3,2 sekunder och omdirigera
       setTimeout(() => {
-        window.location.href = "https://www.tesla.com/sv_se/";
+        window.location.href = "https://www.tesla.com";
       }, 3200);
     }
 
-    if (!sessionStorage.getItem("checkinPosted")) {
+    if (!previousCheckin || now - parseInt(previousCheckin) > expiry) {
       fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
         method: "POST"
       }).then(() => {
-        sessionStorage.setItem("checkinPosted", "true");
+        localStorage.setItem("checkinPosted", now.toString());
         showMessage("✅ Du är nu incheckad och vi hjälper dig snart.");
       }).catch(() => {
         document.getElementById("loader").style.display = "none";
