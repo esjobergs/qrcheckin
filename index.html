@@ -58,33 +58,39 @@
     <div class="loader" id="loader"></div>
     <div class="status" id="status">⏳ Checkar in...</div>
     <div class="info" id="redirect" style="display:none;">
-      Du skickas vidare till tesla.com
+      Du skickas vidare om 5 sekunder...
     </div>
   </div>
 
   <script>
-    const now = new Date().getTime();
-    const previousCheckin = localStorage.getItem("checkinPosted");
-    const expiry = 24 * 60 * 60 * 1000; // 24 timmar i ms
+    const now = new Date();
+    const currentHour = now.getHours(); // lokal tid
 
-    function showMessage(message) {
+    const isWorkHours = currentHour >= 8 && currentHour <= 17;
+    const checkinKey = "checkinPosted";
+    const checkinExpiry = 24 * 60 * 60 * 1000;
+    const lastCheckin = localStorage.getItem(checkinKey);
+    const nowMs = now.getTime();
+
+    function showMessage(text) {
       document.getElementById("loader").style.display = "none";
-      document.getElementById("status").textContent = message;
+      document.getElementById("status").textContent = text;
       document.getElementById("redirect").style.display = "block";
       setTimeout(() => {
         window.location.href = "https://www.tesla.com";
-      }, 3200);
+      }, 5000);
     }
 
-    if (!previousCheckin || now - parseInt(previousCheckin) > expiry) {
+    if (!isWorkHours) {
+      showMessage("❌ Det gick inte att checka in. Vi har öppet mellan 08:00–17:00.");
+    } else if (!lastCheckin || nowMs - parseInt(lastCheckin) > checkinExpiry) {
       fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
         method: "POST"
       }).then(() => {
-        localStorage.setItem("checkinPosted", now.toString());
+        localStorage.setItem(checkinKey, nowMs.toString());
         showMessage("✅ Du är nu incheckad och vi hjälper dig snart.");
       }).catch(() => {
-        document.getElementById("loader").style.display = "none";
-        document.getElementById("status").textContent = "❌ Det gick inte att checka in.";
+        showMessage("❌ Ett tekniskt fel uppstod vid incheckningen.");
       });
     } else {
       showMessage("✅ Du är redan incheckad. Vi hjälper dig snart.");
