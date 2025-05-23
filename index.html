@@ -66,9 +66,9 @@
     const now = new Date();
     const currentHour = now.getHours(); // lokal tid
 
-    const isWorkHours = currentHour >= 7 && currentHour <= 17; //ÖPPETTIDER
+    const isWorkHours = currentHour >= 8 && currentHour <= 17; //ÖPPETTIDER
     const checkinKey = "checkinPosted";
-    const checkinExpiry = 1 * 1 * 1 * 1000;//ÄNDRA TID
+    const checkinExpiry = 24 * 60 * 60 * 1000;//ÄNDRA TID
     const lastCheckin = localStorage.getItem(checkinKey);
     const nowMs = now.getTime();
 
