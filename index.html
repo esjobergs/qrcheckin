@@ -63,14 +63,26 @@
   </div>
 
   <script>
+    function generateSessionId() {
+      return 'sess-' + Math.random().toString(36).substring(2, 10) + '-' + Date.now();
+    }
+
     const now = new Date();
     const currentHour = now.getHours(); // lokal tid
+    const isWorkHours = currentHour >= 8 && currentHour <= 17;
 
-    const isWorkHours = currentHour >= 8 && currentHour <= 17; //ÖPPETTIDER
     const checkinKey = "checkinPosted";
-    const checkinExpiry = 1 * 60 * 60 * 1000;//ÄNDRA TID
+    const sessionKey = "checkinSessionId";
+    const checkinExpiry = 1 * 60 * 60 * 1000; // 1 timme
     const lastCheckin = localStorage.getItem(checkinKey);
     const nowMs = now.getTime();
+
+    // Skapa eller hämta sessions-ID
+    let sessionId = localStorage.getItem(sessionKey);
+    if (!sessionId) {
+      sessionId = generateSessionId();
+      localStorage.setItem(sessionKey, sessionId);
+    }
 
     function showMessage(text) {
       document.getElementById("loader").style.display = "none";
@@ -85,7 +97,11 @@
       showMessage("❌ Det gick inte att checka in. Vi har öppet mellan 08:00–17:00.");
     } else if (!lastCheckin || nowMs - parseInt(lastCheckin) > checkinExpiry) {
       fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
-        method: "POST"
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ sessionId })
       }).then(() => {
         localStorage.setItem(checkinKey, nowMs.toString());
         showMessage("✅ Du är nu incheckad och vi hjälper dig snart.");
