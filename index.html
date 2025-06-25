@@ -1,75 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <title>Package Delivery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Incheckning</title>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 4rem 1rem;
-      background: #f0f0f0;
+      margin: 0;
+      background-color: #f5f5f5;
+      font-family: Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #222;
     }
+
+    .card {
+      background: #ffffff;
+      padding: 2rem 3rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .loader {
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #888;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .status {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       margin-top: 1rem;
+    }
+
+    .info {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <h1>📦 Package delivery / Pick-up</h1>
-  <div class="status" id="status">Registering arrival...</div>
+  <div class="card">
+    <div class="loader" id="loader"></div>
+    <div class="status" id="status">⏳ Checkar in...</div>
+    <div class="info" id="redirect" style="display:none;">
+      Du skickas vidare till <a href="https://shop.tesla.com/sv_se?redirect=no" target="_blank">tesla.com</a>
+    </div>
+  </div>
 
   <script>
-    const sessionKey = "pktSessionId";          // per-user unique ID
-    const checkinKey = "pktLastCheckin";        // last time this user checked in
-    const blockTime = 30 * 60 * 1000;           // 30 minutes
-    const now = Date.now();
+    function generateSessionId() {
+      return 'sess-' + Math.random().toString(36).substring(2, 10) + '-' + Date.now();
+    }
 
-    function redirectAfter(ms) {
+    const now = new Date();
+    const currentHour = now.getHours(); // lokal tid
+    const isWorkHours = currentHour >= 8 && currentHour <= 17;
+
+    const checkinKey = "checkinPosted";
+    const sessionKey = "checkinSessionId";
+    const checkinExpiry = 1 * 60 * 60 * 1000; // 1 timme
+    const lastCheckin = localStorage.getItem(checkinKey);
+    const nowMs = now.getTime();
+
+    // Skapa eller hämta sessions-ID
+    let sessionId = localStorage.getItem(sessionKey);
+    if (!sessionId) {
+      sessionId = generateSessionId();
+      localStorage.setItem(sessionKey, sessionId);
+    }
+
+    function showMessage(text) {
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("status").textContent = text;
+      document.getElementById("redirect").style.display = "block";
       setTimeout(() => {
-        window.location.href = "https://www.tesla.com";
-      }, ms);
+        window.location.href = "https://shop.tesla.com/sv_se?redirect=no";
+      }, 3000);
     }
 
-    function getSessionId() {
-      const existing = localStorage.getItem(sessionKey);
-      if (existing) return existing;
-      const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let id = '';
-      for (let i = 0; i < 5; i++) {
-        id += letters.charAt(Math.floor(Math.random() * letters.length));
-      }
-      const newId = "PKT-" + id;
-      localStorage.setItem(sessionKey, newId);
-      return newId;
-    }
-
-    const sessionId = getSessionId();
-    const lastCheckin = parseInt(localStorage.getItem(checkinKey) || "0");
-
-    if (now - lastCheckin < blockTime) {
-      console.log("⛔ Already checked in recently.");
-      document.getElementById("status").textContent = "✅ Arrival already registered recently.";
-      redirectAfter(4000);
-    } else {
-      console.log("✅ Sending POST for", sessionId);
-
-      fetch("https://prod-41.westus.logic.azure.com:443/workflows/6c9fe3017eff49fe82c8d10cf89f6af5/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3Z4tYoCTd4pD5Fcw5vNDf1qVXuPo4pauZxADVQnZZOc", {
+    if (!isWorkHours) {
+      showMessage("❌ Det gick inte att checka in. Vi har öppet mellan 08:00–17:00.");
+    } else if (!lastCheckin || nowMs - parseInt(lastCheckin) > checkinExpiry) {
+      fetch("https://prod-24.westus.logic.azure.com:443/workflows/bbf5ab986fdb44979c88f0fd8b66e30b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m63Offwes_4n8sJBjQXWXvCk9sPifJdx7TDiRQ90VO8", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ sessionId })
       }).then(() => {
-        localStorage.setItem(checkinKey, now.toString());
-        document.getElementById("status").textContent = `✅ Arrival registered. We'll be with you shortly. ID: ${sessionId}`;
-        redirectAfter(4000);
+        localStorage.setItem(checkinKey, nowMs.toString());
+        showMessage("✅ Du är nu incheckad och vi hjälper dig snart.");
       }).catch(() => {
-        document.getElementById("status").textContent = "❌ Error. Please try again.";
-        // Optional: still redirect after error?
-        redirectAfter(6000);
+        showMessage("❌ Ett tekniskt fel uppstod vid incheckningen.");
       });
+    } else {
+      showMessage("✅ Du är redan incheckad. Vi hjälper dig snart.");
     }
   </script>
 </body>
